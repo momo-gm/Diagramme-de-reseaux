@@ -1,4 +1,3 @@
-<script src="https://cdn.anychart.com/releases/8.12.1/js/anychart-base.min.js"></script>
 
 anychart.onDocumentReady(function () {
 
@@ -24,7 +23,7 @@ anychart.onDocumentReady(function () {
         {id: "Jocelyn Parady"},
         {id: "Muriel Fortier"},
         {id: "Jeanine Maes"},
-        {id: "Samuel Champagne"}
+        {id: "Samuel Champagne"},
         {id: "Manon Massé"},
         {id: "Benoît Jodoin"}
       ],
