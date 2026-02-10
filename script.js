@@ -1,7 +1,5 @@
 
 anychart.onDocumentReady(function () {
-chart.layout().iterationCount(1000);
-chart.layout().springLength(120);
 
 
     // create data
@@ -68,3 +66,19 @@ chart.layout().springLength(120);
     // initiate drawing the chart
     chart.draw();
 });
+chart.layout().iterationCount(1000);
+chart.layout().springLength(120);
+
+chart.nodes().normal().labels().enabled(true);
+chart.nodes().normal().labels().fontSize(12);
+
+chart.group("source").nodes().normal()
+  .fill("#2c3e50")
+  .stroke("#2c3e50")
+  .labels().fontColor("#ffffff");
+
+chart.group("source").nodes().normal().height(35);
+chart.nodes().normal().height(20);
+
+chart.edges().normal().stroke("#999", 1, "5 5");
+
