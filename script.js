@@ -1,5 +1,8 @@
 
 anychart.onDocumentReady(function () {
+chart.layout().iterationCount(1000);
+chart.layout().springLength(120);
+
 
     // create data
     var data = {
