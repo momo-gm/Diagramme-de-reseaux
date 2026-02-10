@@ -5,6 +5,9 @@ anychart.onDocumentReady(function () {
     // create data
     var data = {
       nodes: [
+        {id: "Autobiographies", group: "source"},
+        {id: "Correspondances", group: "source"},
+        {id: "Périodiques", group: "source"},
         {id: "Autobiographies"},
         {id: "Correspondances"},
         {id: "Périodiques"},
