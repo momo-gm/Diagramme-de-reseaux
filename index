@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagramme de Réseau Interactif</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        svg:active {
+            cursor: grabbing;
+        }
+
+        .node-category {
+            stroke: #fff;
+            stroke-width: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node-category:hover {
+            stroke-width: 5px;
+            filter: brightness(1.2);
+        }
+
+        .node-name {
+            stroke: #fff;
+            stroke-width: 2px;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+
+        .node-name:hover {
+            stroke-width: 4px;
+            filter: brightness(1.1);
+        }
+
+        .link {
+            stroke: rgba(255, 255, 255, 0.4);
+            stroke-width: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .link:hover {
+            stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 3px;
+        }
+
+        .label {
+            font-size: 14px;
+            font-weight: 600;
+            fill: #fff;
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .label-category {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 250px;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+        }
+
+        .info-panel h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .info-panel p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .legend h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #fff;
+        }
+
+        .legend-text {
+            color: #555;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="info-panel">
+            <h2>🔗 Réseau Interactif</h2>
+            <p><strong>Déplacer :</strong> Cliquez et glissez les prénoms</p>
+            <p><strong>Zoomer :</strong> Molette de la souris</p>
+            <p><strong>Info :</strong> Survolez les éléments</p>
+        </div>
+
+        <div class="legend">
+            <h3>Légende</h3>
+            <div id="legend-items"></div>
+        </div>
+
+        <svg id="network"></svg>
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        // ========================================
+        // DONNÉES - MODIFIEZ CETTE SECTION
+        // ========================================
+        
+        const categories = [
+            { id: "cat1", name: "Famille", color: "#FF6B6B" },
+            { id: "cat2", name: "Amis", color: "#4ECDC4" },
+            { id: "cat3", name: "Collègues", color: "#FFE66D" }
+        ];
+
+        const names = [
+            { id: "name1", name: "Marie", categories: ["cat1"] },
+            { id: "name2", name: "Pierre", categories: ["cat1", "cat2"] },
+            { id: "name3", name: "Sophie", categories: ["cat2"] },
+            { id: "name4", name: "Lucas", categories: ["cat2", "cat3"] },
+            { id: "name5", name: "Emma", categories: ["cat1"] },
+            { id: "name6", name: "Thomas", categories: ["cat3"] },
+            { id: "name7", name: "Léa", categories: ["cat2"] },
+            { id: "name8", name: "Antoine", categories: ["cat1", "cat3"] },
+            { id: "name9", name: "Chloé", categories: ["cat2"] },
+            { id: "name10", name: "Julien", categories: ["cat3"] }
+        ];
+
+        // ========================================
+        // CONFIGURATION DU GRAPHIQUE
+        // ========================================
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const svg = d3.select("#network");
+        const g = svg.append("g");
+
+        // Zoom
+        const zoom = d3.zoom()
+            .scaleExtent([0.3, 3])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Création des nœuds et liens
+        const nodes = [];
+        const links = [];
+
+        // Ajouter les catégories comme nœuds
+        categories.forEach(cat => {
+            nodes.push({
+                id: cat.id,
+                name: cat.name,
+                type: "category",
+                color: cat.color,
+                size: 40
+            });
+        });
+
+        // Ajouter les prénoms comme nœuds et créer les liens
+        names.forEach(person => {
+            nodes.push({
+                id: person.id,
+                name: person.name,
+                type: "name",
+                categories: person.categories,
+                size: 25
+            });
+
+            // Créer un lien vers chaque catégorie
+            person.categories.forEach(catId => {
+                links.push({
+                    source: person.id,
+                    target: catId
+                });
+            });
+        });
+
+        // Simulation de force
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-500))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 10));
+
+        // Dessiner les liens
+        const link = g.append("g")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", "link");
+
+        // Dessiner les nœuds
+        const node = g.append("g")
+            .selectAll("circle")
+            .data(nodes)
+            .join("circle")
+            .attr("class", d => d.type === "category" ? "node-category" : "node-name")
+            .attr("r", d => d.size)
+            .attr("fill", d => {
+                if (d.type === "category") return d.color;
+                // Pour les prénoms, utiliser la couleur de la première catégorie
+                const catId = d.categories[0];
+                const cat = categories.find(c => c.id === catId);
+                return cat ? cat.color : "#999";
+            })
+            .call(drag(simulation))
+            .on("mouseover", showTooltip)
+            .on("mouseout", hideTooltip);
+
+        // Ajouter les labels
+        const label = g.append("g")
+            .selectAll("text")
+            .data(nodes)
+            .join("text")
+            .attr("class", d => d.type === "category" ? "label label-category" : "label")
+            .text(d => d.name);
+
+        // Mettre à jour les positions à chaque tick
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            label
+                .attr("x", d => d.x)
+                .attr("y", d => d.y + 5);
+        });
+
+        // Fonction de drag
+        function drag(simulation) {
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            return d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended);
+        }
+
+        // Tooltip
+        const tooltip = d3.select("#tooltip");
+
+        function showTooltip(event, d) {
+            let content = `<strong>${d.name}</strong><br>`;
+            
+            if (d.type === "category") {
+                const count = names.filter(n => n.categories.includes(d.id)).length;
+                content += `Type: Catégorie<br>${count} prénom(s)`;
+            } else {
+                const catNames = d.categories.map(catId => {
+                    const cat = categories.find(c => c.id === catId);
+                    return cat ? cat.name : '';
+                }).join(", ");
+                content += `Type: Prénom<br>Catégories: ${catNames}`;
+            }
+
+            tooltip
+                .html(content)
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 15) + "px")
+                .classed("show", true);
+        }
+
+        function hideTooltip() {
+            tooltip.classed("show", false);
+        }
+
+        // Créer la légende
+        const legendItems = d3.select("#legend-items");
+        categories.forEach(cat => {
+            const item = legendItems.append("div").attr("class", "legend-item");
+            item.append("div")
+                .attr("class", "legend-color")
+                .style("background-color", cat.color);
+            item.append("span")
+                .attr("class", "legend-text")
+                .text(cat.name);
+        });
+
+        // Centrer le graphique au démarrage
+        setTimeout(() => {
+            const bounds = g.node().getBBox();
+            const fullWidth = bounds.width;
+            const fullHeight = bounds.height;
+            const midX = bounds.x + fullWidth / 2;
+            const midY = bounds.y + fullHeight / 2;
+
+            const scale = 0.8 / Math.max(fullWidth / width, fullHeight / height);
+            const translate = [width / 2 - scale * midX, height / 2 - scale * midY];
+
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+        }, 1000);
+    </script>
+</body>
+</html>
