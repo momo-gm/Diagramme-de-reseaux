@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             height: 100vh;
             overflow: hidden;
         }
@@ -114,7 +114,7 @@
         }
 
         .info-panel h2 {
-            color: #667eea;
+            color: #102542;
             margin-bottom: 10px;
             font-size: 20px;
         }
@@ -136,7 +136,7 @@
         }
 
         .legend h3 {
-            color: #667eea;
+            color: #102542;
             margin-bottom: 10px;
             font-size: 16px;
         }
@@ -185,9 +185,9 @@
         // ========================================
         
         const categories = [
-            { id: "cat1", name: "Famille", color: "#FF6B6B" },
-            { id: "cat2", name: "Amis", color: "#4ECDC4" },
-            { id: "cat3", name: "Collègues", color: "#FFE66D" }
+            { id: "cat1", name: "Autobiographies", color: "#B3A394" },
+            { id: "cat2", name: "Périodiques", color: "#CDD7D6" },
+            { id: "cat3", name: "Correspondances", color: "#F87060" }
         ];
 
         const names = [
@@ -282,7 +282,7 @@
                 // Pour les prénoms, utiliser la couleur de la première catégorie
                 const catId = d.categories[0];
                 const cat = categories.find(c => c.id === catId);
-                return cat ? cat.color : "#999";
+                return cat ? cat.color : "#0a0a0a";
             })
             .call(drag(simulation))
             .on("mouseover", showTooltip)
