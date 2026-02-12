@@ -229,9 +229,9 @@
         // Fonction pour calculer la taille du cercle selon le texte
     function calculateNodeSize(text, isCategory) {
     // Estimation : ~8 pixels par caractère + marge
-    const baseSize = text.length * 8 + 20;
-    const minSize = isCategory ? 50 : 35;  // Taille minimum
-    const maxSize = isCategory ? 120 : 80; // Taille maximum
+    const baseSize = text.length * 7 + 15;
+    const minSize = isCategory ? 40 : 30;  // Taille minimum
+    const maxSize = isCategory ? 100 : 70; // Taille maximum
     return Math.min(Math.max(baseSize, minSize), maxSize);
     }
         
