@@ -230,8 +230,8 @@
     function calculateNodeSize(text, isCategory) {
     // Estimation : ~8 pixels par caractère + marge
     const baseSize = text.length * 8 + 15;
-    const minSize = isCategory ? 25 : 15;  // Taille minimum
-    const maxSize = isCategory ? 60 : 35; // Taille maximum
+    const minSize = isCategory ? 30 : 20;  // Taille minimum
+    const maxSize = isCategory ? 70 : 40; // Taille maximum
     return Math.min(Math.max(baseSize, minSize), maxSize);
     }
         
