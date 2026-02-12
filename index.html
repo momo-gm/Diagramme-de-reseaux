@@ -233,7 +233,8 @@
     const minSize = isCategory ? 50 : 35;  // Taille minimum
     const maxSize = isCategory ? 120 : 80; // Taille maximum
     return Math.min(Math.max(baseSize, minSize), maxSize);
-    
+    }
+        
         // Ajouter les catégories comme nœuds
         categories.forEach(cat => {
             nodes.push({
