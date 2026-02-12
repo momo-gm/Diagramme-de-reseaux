@@ -226,6 +226,14 @@
         const nodes = [];
         const links = [];
 
+        // Fonction pour calculer la taille du cercle selon le texte
+    function calculateNodeSize(text, isCategory) {
+    // Estimation : ~8 pixels par caractère + marge
+    const baseSize = text.length * 8 + 20;
+    const minSize = isCategory ? 50 : 35;  // Taille minimum
+    const maxSize = isCategory ? 120 : 80; // Taille maximum
+    return Math.min(Math.max(baseSize, minSize), maxSize);
+    
         // Ajouter les catégories comme nœuds
         categories.forEach(cat => {
             nodes.push({
@@ -233,7 +241,7 @@
                 name: cat.name,
                 type: "category",
                 color: cat.color,
-                size: 40
+                size: calculateNodeSize(cat.name, true)
             });
         });
 
@@ -244,7 +252,7 @@
                 name: person.name,
                 type: "name",
                 categories: person.categories,
-                size: 25
+                size: calculateNodeSize(person.name, false)
             });
 
             // Créer un lien vers chaque catégorie
