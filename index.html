@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diagramme de réseau interactif</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -211,6 +211,38 @@
         const height = window.innerHeight;
 
         const svg = d3.select("#network");
+
+        // Définition des dégradés dans le bloc <defs>
+        const defs = svg.append("defs");
+
+        // Créer un dégradé pour chaque combinaison de deux catégories
+        names.forEach(person => {
+            if (person.categories.length === 2) {
+                const gradientId = `grad-${person.categories[0]}-${person.categories[1]}`;
+
+                // Vérifier si ce dégradé n'existe pas déjà
+                if (defs.select(`#${gradientId}`).empty()) {
+                    const cat1 = categories.find(c => c.id === person.categories[0]);
+                    const cat2 = categories.find(c => c.id === person.categories[1]);
+
+                    const gradient = defs.append("linearGradient")
+                        .attr("id", gradientId)
+                        .attr("x1", "0%")
+                        .attr("y1", "0%")
+                        .attr("x2", "100%")
+                        .attr("y2", "100%");
+
+                    gradient.append("stop")
+                        .attr("offset", "0%")
+                        .attr("stop-color", cat1 ? cat1.color : "#ccc");
+
+                    gradient.append("stop")
+                        .attr("offset", "100%")
+                        .attr("stop-color", cat2 ? cat2.color : "#ccc");
+                }
+            }
+        });
+
         const g = svg.append("g");
 
         // Zoom
@@ -227,13 +259,12 @@
         const links = [];
 
         // Fonction pour calculer la taille du cercle selon le texte
-    function calculateNodeSize(text, isCategory) {
-    // Estimation : ~8 pixels par caractère + marge
-    const baseSize = text.length * 8 + 15;
-    const minSize = isCategory ? 30 : 20;  // Taille minimum
-    const maxSize = isCategory ? 70 : 40; // Taille maximum
-    return Math.min(Math.max(baseSize, minSize), maxSize);
-    }
+        function calculateNodeSize(text, isCategory) {
+            const baseSize = text.length * 8 + 15;
+            const minSize = isCategory ? 30 : 20;
+            const maxSize = isCategory ? 70 : 40;
+            return Math.min(Math.max(baseSize, minSize), maxSize);
+        }
         
         // Ajouter les catégories comme nœuds
         categories.forEach(cat => {
@@ -256,7 +287,6 @@
                 size: calculateNodeSize(person.name, false)
             });
 
-            // Créer un lien vers chaque catégorie
             person.categories.forEach(catId => {
                 links.push({
                     source: person.id,
@@ -288,9 +318,14 @@
             .attr("r", d => d.size)
             .attr("fill", d => {
                 if (d.type === "category") return d.color;
-                // Pour les prénoms, utiliser la couleur de la première catégorie
-                const catId = d.categories[0];
-                const cat = categories.find(c => c.id === catId);
+
+                // Si le nœud appartient à deux catégories, utiliser un dégradé
+                if (d.categories.length === 2) {
+                    return `url(#grad-${d.categories[0]}-${d.categories[1]})`;
+                }
+
+                // Sinon, couleur de la première catégorie
+                const cat = categories.find(c => c.id === d.categories[0]);
                 return cat ? cat.color : "#0a0a0a";
             })
             .call(drag(simulation))
